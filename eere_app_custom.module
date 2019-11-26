@@ -1,0 +1,197 @@
+<?php
+
+/**
+ * @file
+ * This module implements various required EERE components and
+ * configurations.  Additional functionality should be placed into
+ * the appropriate submodules.
+ */
+define('EERE_APP_CUSTOM_PATH', drupal_get_path('module', 'eere_app_custom'));
+
+/* * *****************************************************************************
+ * CORE HOOKS
+ * Drupal core hook implementations.
+ * **************************************************************************** */
+
+/**
+ * Implements hook_form_alter().
+ */
+function eere_app_custom_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    // SITE INFORMATION FORM
+    case 'system_site_information_settings':
+      // Give some weights to the existing items so we can squeeze ours in.
+      $i = 0;
+      foreach (element_children($form['site_information']) as $child) {
+        $form['site_information'][$child]['#weight'] = $i++;
+      }
+
+      // Add a field for the office name for use in the footer.
+      $form['site_information']['eere_app_custom_office'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Office Name'),
+        '#description' => t('Enter the name of the office for this project.'),
+        '#required' => TRUE,
+        '#default_value' => variable_get('eere_app_custom_office', ''),
+        '#weight' => $form['site_information']['site_name']['#weight'] + .1,
+      );
+
+      // Add a field for the office url for use in the footer.
+      $form['site_information']['eere_app_custom_office_url'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Office URL'),
+        '#description' => t('Enter the URL of the website for the office for this project.'),
+        '#required' => TRUE,
+        '#default_value' => variable_get('eere_app_custom_office_url', ''),
+        '#weight' => $form['site_information']['site_name']['#weight'] + .2,
+      );
+
+      // Add a field for the Contact Us url for use in the footer.
+      $form['site_information']['eere_app_custom_contact_url'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Contact Us URL'),
+        '#description' => t('Enter the URL of the Contact Us page for this project.'),
+        '#required' => TRUE,
+        '#default_value' => variable_get('eere_app_custom_contact_url', ''),
+        '#weight' => $form['site_information']['site_name']['#weight'] + .3,
+      );
+      break;
+
+  }
+}
+
+/**
+ * Filter out and translate bad characters from the title tag.
+ *
+ * @param $string
+ *   The raw title string.
+ *
+ * @return
+ *   Clean, compliant and valid title string.
+ */
+function eere_app_custom_title_filter($string) {
+  // Strip off any HTML elements that may have snuck in.
+  $string = strip_tags($string);
+  // List items to be translated in order that they should be replaced.
+  $translate = array(
+    '&amp;'   => 'and',
+    '&nbsp;'  => ' ',
+    '&ndash;' => '-',
+    '&mdash;' => '-',
+    '&'       => 'and',
+  );
+  // Run the replacements
+  foreach ($translate as $from => $to) {
+    $string = str_replace($from, $to, $string);
+  }
+  return $string;
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function eere_app_custom_token_info() {
+  $site['office-name'] = array(
+    'name' => t('Office Name'),
+    'description' => t('The office name.'),
+  );
+  $site['office-url'] = array(
+    'name' => t('Office URL'),
+    'description' => t('The office URL.'),
+  );
+  $site['contact-url'] = array(
+    'name' => t('Contact Us URL'),
+    'description' => t('The Contact Us URL.'),
+  );
+
+  return array(
+    'tokens' => array('site' => $site),
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ *
+ * Provide tokens for the office name.
+ */
+function eere_app_custom_tokens($type, $tokens, $data = array(), $options = array()) {
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+
+  switch ($type) {
+    case 'site':
+      foreach ($tokens as $name => $orig) {
+        switch ($name) {
+          case 'office-name':
+            $replacements[$orig] = ($sanitize ? filter_xss(variable_get('eere_app_custom_office', '')) : variable_get('eere_app_custom_office', ''));
+            break;
+          case 'office-url':
+            $replacements[$orig] = ($sanitize ? filter_xss(variable_get('eere_app_custom_office_url', '')) : variable_get('eere_app_custom_office_url', ''));
+            break;
+          case 'contact-url':
+            $replacements[$orig] = ($sanitize ? filter_xss(variable_get('eere_app_custom_contact_url', '')) : variable_get('eere_app_custom_contact_url', ''));
+            break;
+        }
+      }
+      break;
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implements hook_url_outbound_alter().
+ */
+function eere_app_custom_url_outbound_alter(&$path, &$options, $original_path) {
+  // Always make login/logout links go to the current page.
+  switch ($path) {
+    case 'user/logout':
+    case 'user/login':
+      $options['query']['destination'] = $_GET['q'];
+      break;
+  }
+}
+
+/* * *****************************************************************************
+ * CONTRIB HOOKS
+ * Functionality extended by contributed modules.
+ * **************************************************************************** */
+
+/* * *****************************************************************************
+ * MODULE FUNCTIONS
+ * Extendable functionality for this module.
+ * **************************************************************************** */
+
+/**
+ * Return the office name if it is set.
+ */
+function eere_app_custom_get_office_name() {
+  return variable_get('eere_app_custom_office', NULL);
+}
+
+/**
+ * Return the office url if it is set.
+ */
+function eere_app_custom_get_office_url() {
+  return variable_get('eere_app_custom_office_url', NULL);
+}
+
+/**
+ * Return the office url if it is set.
+ */
+function eere_app_custom_get_contact_url() {
+  return variable_get('eere_app_custom_contact_url', NULL);
+}
+
+/**
+ * Return the path to the EEREApp theme root.
+ */
+function eere_app_custom_theme_path() {
+  $path = &drupal_static(__FUNCTION__);
+
+  if (!$path) {
+    $path = drupal_get_path('theme', 'eere_app');
+  }
+
+  return $path;
+}

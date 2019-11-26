@@ -1,0 +1,8 @@
+; $Id$
+name = EERE App Custom
+description = Companion module to the BOOTSTRAP EERE App theme, providing required EERE components and alterations.
+core = 7.x
+version = 7.x-1.0
+package = EERE
+configure = admin/config/eere_app_custom
+files[] = eere_app_module.module
