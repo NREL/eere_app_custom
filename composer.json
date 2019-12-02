@@ -3,10 +3,17 @@
   "description": "Companion module for bootstrap_eere_app Drupal 7 theme",
   "type": "drupal-module",
   "license": "GPL-2.0+",
+  "authors": [
+    {
+      "name": "Shaun Laws (slaws)",
+      "email": "shaun.laws@nrel.gov",
+      "role": "Maintainer"
+    }
+  ],
   "minimum-stability": "dev",
   "repositories": {
     "drupal": {
-            "type": "composer",
+      "type": "composer",
       "url": "https://packages.drupal.org/7"
     }
   }
