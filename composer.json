@@ -1,0 +1,13 @@
+{
+  "name": "nrel/eere_app_custom",
+  "description": "Companion module for bootstrap_eere_app Drupal 7 theme",
+  "type": "drupal-module",
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "repositories": {
+    "drupal": {
+            "type": "composer",
+      "url": "https://packages.drupal.org/7"
+    }
+  }
+}
